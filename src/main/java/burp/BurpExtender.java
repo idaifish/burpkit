@@ -40,6 +40,18 @@ public class BurpExtender implements IBurpExtender, ITab, ISessionHandlingAction
 
         SwingUtilities.invokeLater(() -> {
             tab = new BurpKitTab();
+
+            if (callback.loadExtensionSetting("BURPKIT_NEW") != null) {
+                // Restore settings.
+                for (int i = 0; i < tab.headerActions.length; i++) {
+                    tab.headerActions[i].setSelectedItem(callback.loadExtensionSetting("HEADER_ACTION_" + i));
+                    tab.headerNames[i].setText(callback.loadExtensionSetting("HEADER_NAME_" + i));
+                    tab.headerPrefixes[i].setText(callback.loadExtensionSetting("HEADER_PREFIX_" + i));
+                    tab.headerValues[i].setText(callback.loadExtensionSetting("HEADER_VALUE_" + i));
+                    tab.regexpCheckBoxes[i].setSelected(Boolean.parseBoolean(callback.loadExtensionSetting("HEADER_REGEXP_" + i)));
+                }
+            }
+
             callback.customizeUiComponent(tab.mainPanel);
             callback.addSuiteTab(BurpExtender.this);
         });
@@ -139,6 +151,16 @@ public class BurpExtender implements IBurpExtender, ITab, ISessionHandlingAction
 
     @Override
     public void extensionUnloaded() {
+        // Save settings.
+        callback.saveExtensionSetting("BURPKIT_NEW", "FALSE");
+        for (int i = 0; i < tab.headerActions.length; i++) {
+            callback.saveExtensionSetting("HEADER_ACTION_" + i, (String) tab.headerActions[i].getSelectedItem());
+            callback.saveExtensionSetting("HEADER_NAME_" + i, tab.headerNames[i].getText());
+            callback.saveExtensionSetting("HEADER_PREFIX_" + i, tab.headerPrefixes[i].getText());
+            callback.saveExtensionSetting("HEADER_VALUE_" + i, tab.headerValues[i].getText());
+            callback.saveExtensionSetting("HEADER_REGEXP_" + i, String.valueOf(tab.regexpCheckBoxes[i].isSelected()));
+        }
+
         callback.printOutput(extName + " extension unloaded.");
     }
 }
